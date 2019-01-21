@@ -64,6 +64,7 @@ import os
 
 argparser = argparse.ArgumentParser(description="Rename directories to incrementing padded numbers, preserving original order.")
 argparser.add_argument("topdir")
+argparser.add_argument("--dry-run", action="store_true", help="Print out what I would do, but don't actually do it.")
 cliargs = argparser.parse_args()
 
 dir_s = glob.glob(cliargs.topdir + "/*")
@@ -72,7 +73,11 @@ dir_s.sort()
 if len(dir_s) > 0:
     index = 1
     for directory in dir_s:
-        os.rename(directory, cliargs.topdir + "/" + "%05d" % index)
+        source = directory
+        destination = cliargs.topdir + "/" + "%05d" % index
+        print("Move %s to %s" % (source, destination))
+        if cliargs.dry_run is not True:
+            os.rename(directory, destination)
         index = index + 1
 else:
     logging.error("No directories found in %s" % cliargs.topdir)
