@@ -1,0 +1,6 @@
+ERROR:root:No instances of TN datastream in sample-batch/smith_ssc_324_digital_object_200
+ERROR:root:No instances of OBJ datastream in sample-batch/smith_ssc_324_digital_object_323/00005
+ERROR:root:No instances of JP2 datastream in sample-batch/smith_ssc_324_digital_object_323/00005
+ERROR:root:No instances of MODS datastream in sample-batch/smith_ssc_324_digital_object_323/00005
+ERROR:root:No instances of TN datastream in sample-batch/smith_ssc_324_digital_object_323/00005
+WARNING:root:More than one instances of OBJ datastream in sample-batch/smith_ssc_324_digital_object_323/00006. Arbitrarily picking sample-batch/smith_ssc_324_digital_object_323/00006/OBJ.JPG.
