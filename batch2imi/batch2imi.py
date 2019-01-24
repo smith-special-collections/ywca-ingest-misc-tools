@@ -8,16 +8,19 @@ import pprint
 argparser = argparse.ArgumentParser()
 argparser.add_argument("TOPFOLDER")
 argparser.add_argument("OUTPUT")
+argparser.add_argument("PARENTID")
+argparser.add_argument("--parent-cmodel", default="islandora:compoundCModel", help="default: 'islandora:compoundCModel'")
+argparser.add_argument("--child-cmodel", default="islandora:sp_basic_image", help="default: 'islandora:sp_basic_image'")
 args = argparser.parse_args()
 
 TOPFOLDER = args.TOPFOLDER
 
 sourceFolder = TOPFOLDER.strip().strip('/')
 
-findDatastreamsChild = ['OBJ','JP2','MODS', 'TN']
+findDatastreamsChild = ['OBJ','JP2','MODS', 'TN', 'LARGE_JPG', 'OCR', 'HOCR', 'JPG']
 findDatastreamsParent = ['TN', 'OCR']
-PARENT_TYPE = "COMPOUND"
-CHILD_TYPE = "LARGEIMAGE"
+PARENT_TYPE = args.parent_cmodel
+CHILD_TYPE = args.child_cmodel
 
 
 def getSubDirs(sourceFolder):
@@ -107,6 +110,7 @@ class Batch():
             myLine['parentLineNumber'] = None
             if myLine['type'] == PARENT_TYPE:
                 currentParentGlobalIndexNumber = globalIndex
+                myLine['parentLineNumber'] = args.PARENTID
             else:
                 myLine['parentLineNumber'] = currentParentGlobalIndexNumber
             globalIndex = globalIndex + 1
