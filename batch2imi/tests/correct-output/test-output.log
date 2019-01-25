@@ -1,6 +1,10 @@
-ERROR:root:No instances of TN datastream in sample-batch/smith_ssc_324_digital_object_200
-ERROR:root:No instances of OBJ datastream in sample-batch/smith_ssc_324_digital_object_323/00005
-ERROR:root:No instances of JP2 datastream in sample-batch/smith_ssc_324_digital_object_323/00005
-ERROR:root:No instances of MODS datastream in sample-batch/smith_ssc_324_digital_object_323/00005
-ERROR:root:No instances of TN datastream in sample-batch/smith_ssc_324_digital_object_323/00005
-WARNING:root:More than one instances of OBJ datastream in sample-batch/smith_ssc_324_digital_object_323/00006. Arbitrarily picking sample-batch/smith_ssc_324_digital_object_323/00006/OBJ.JPG.
+ERROR:root:No instances of TN datastream in ./smith_ssc_324_digital_object_200
+ERROR:root:No instances of OBJ datastream in ./smith_ssc_324_digital_object_323/00005
+ERROR:root:No instances of JP2 datastream in ./smith_ssc_324_digital_object_323/00005
+ERROR:root:No instances of MODS datastream in ./smith_ssc_324_digital_object_323/00005
+ERROR:root:No instances of TN datastream in ./smith_ssc_324_digital_object_323/00005
+ERROR:root:No instances of LARGE_JPG datastream in ./smith_ssc_324_digital_object_323/00005
+ERROR:root:No instances of OCR datastream in ./smith_ssc_324_digital_object_323/00005
+ERROR:root:No instances of HOCR datastream in ./smith_ssc_324_digital_object_323/00005
+ERROR:root:No instances of JPG datastream in ./smith_ssc_324_digital_object_323/00005
+WARNING:root:More than one instances of OBJ datastream in ./smith_ssc_324_digital_object_323/00006. Arbitrarily picking ./smith_ssc_324_digital_object_323/00006/OBJ.JPG.

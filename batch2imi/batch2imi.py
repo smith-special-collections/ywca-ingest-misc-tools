@@ -3,12 +3,14 @@ import os
 import argparse
 import logging
 import csv
+import re
 import pprint
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument("TOPFOLDER")
 argparser.add_argument("OUTPUT")
 argparser.add_argument("PARENTID")
+argparser.add_argument("--remote-path", help="Example: /mnt/ingest/myingestbatch/")
 argparser.add_argument("--parent-cmodel", default="islandora:compoundCModel", help="default: 'islandora:compoundCModel'")
 argparser.add_argument("--child-cmodel", default="islandora:sp_basic_image", help="default: 'islandora:sp_basic_image'")
 args = argparser.parse_args()
@@ -21,10 +23,10 @@ findDatastreamsChild = ['OBJ','JP2','MODS', 'TN', 'LARGE_JPG', 'OCR', 'HOCR', 'J
 findDatastreamsParent = ['TN', 'OCR']
 PARENT_TYPE = args.parent_cmodel
 CHILD_TYPE = args.child_cmodel
+OUTPUT_FILENAME = os.path.abspath(args.OUTPUT)
 
-
-def getSubDirs(sourceFolder):
-    level1 = glob.glob(sourceFolder + '/*')
+def getSubDirs(directory):
+    level1 = glob.glob(directory + '/*')
     parents = []
     for filename in level1:
         if os.path.isdir(filename):
@@ -37,13 +39,15 @@ def getDatastreams(objectDir, findDatastreams):
     for datastreamType in findDatastreams:
         datastreamInstances = glob.glob(objectDir  + '/' + datastreamType + '.*')
         datastreamInstances.sort()
-        if len(datastreamInstances) > 1:
-            logging.warning("More than one instances of %s datastream in %s. Arbitrarily picking %s." % (datastreamType, objectDir, datastreamInstances[0]))
-        elif len(datastreamInstances) < 1:
+        if len(datastreamInstances) < 1:
             logging.error("No instances of %s datastream in %s" % (datastreamType, objectDir))
         else:
-            datastreamFile = datastreamInstances[0]
-            datastreams[datastreamType] = datastreamFile
+            if len(datastreamInstances) > 1:
+                logging.warning("More than one instances of %s datastream in %s. Arbitrarily picking %s." % (datastreamType, objectDir, datastreamInstances[0]))
+            datastreamFileName = datastreamInstances[0]
+            if args.remote_path is not None:
+                datastreamFileName = re.sub("^\.\/", args.remote_path, datastreamFileName)
+            datastreams[datastreamType] = datastreamFileName
     return datastreams
 
 class CompoundObject():
@@ -125,20 +129,21 @@ class Batch():
         return myData
 
 if __name__ == '__main__':
-    parent_s = getSubDirs(sourceFolder)
-
+    os.chdir(sourceFolder)
+    parent_s = getSubDirs('.')
     batch = Batch()
     for parent in parent_s:
         compoundObject = CompoundObject(parent)
         batch.addObject(compoundObject)
     table = batch.getImiBatch()
 
+    # Write table to a file
     csvFieldsSet = set()
     for line in table:
         csvFieldsSet.update(line.keys())
     fieldnames = list(csvFieldsSet)
     fieldnames.sort()
-    with open(args.OUTPUT, 'w', newline='') as csvfile:
+    with open(OUTPUT_FILENAME, 'w', newline='') as csvfile:
         csvWriter = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
         csvWriter.writeheader()
