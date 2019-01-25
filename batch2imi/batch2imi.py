@@ -97,13 +97,21 @@ class Batch():
     def getImiBatch(self):
         # Assuming that all objects in the batch are a compound of some kind
         myData = []
+        # Get all the objects and put them into a giant table in tabular format
         for object in self.object_s:
             myParentLine = object.getParentTabular()
             myData.append(myParentLine)
             for child in object.getChildrenTabular():
                 myChildLine = child
                 myData.append(myChildLine)
-        globalIndex = 1
+
+        # Assign parents by their respective line number
+        # Naive approach:
+        #   Scan down the list (in order)
+        #   If parent, set following parent ids to that line number
+        #   If child, use the last parent id set via that method.
+        globalIndex = 1 # Start at 1
+        globalIndex = globalIndex + 1 # Plus 1 to account for the header line
         currentParentGlobalIndexNumber = None
         for myLine in myData:
             myLine['globalIndex'] = globalIndex
