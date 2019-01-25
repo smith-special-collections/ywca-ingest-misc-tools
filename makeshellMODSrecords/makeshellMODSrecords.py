@@ -20,6 +20,7 @@ argparser = argparse.ArgumentParser(description=description, formatter_class=Raw
 argparser.add_argument("TOPFOLDER")
 argparser.add_argument("SEARCHPATTERN", help="Example 'smith*' MUST BE IN QUOTES")
 argparser.add_argument('--nocopy', help="Modifying the folder directly instead of making a copy", action="store_true")
+argparser.add_argument('--dry-run', help="Print out what I would do but don't actually do it", action="store_true")
 args = argparser.parse_args()
 
 TOPFOLDER = args.TOPFOLDER
@@ -37,7 +38,8 @@ pageModsTemplate = """<?xml version="1.0" encoding="UTF-8"?>
 """
 
 if __name__ == "__main__":
-    if(args.nocopy):
+
+    if args.nocopy or args.dry_run:
         destFolder = sourceFolder
     else:
         destFolder = sourceFolder + '-batched'
@@ -49,6 +51,7 @@ if __name__ == "__main__":
         id = dir.strip('/')
         modsOutput = pageModsTemplate.format(identifier=id)
         modsFileName = dir + '/MODS.xml'
-        print("Generating %s" % modsFileName)
-        with open(modsFileName, 'w') as modsFile:
-            modsFile.write(modsOutput)
+        print("Generate %s" % modsFileName)
+        if not args.dry_run:
+            with open(modsFileName, 'w') as modsFile:
+                modsFile.write(modsOutput)
