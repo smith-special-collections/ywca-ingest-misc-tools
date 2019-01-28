@@ -20,7 +20,7 @@ TOPFOLDER = args.TOPFOLDER
 sourceFolder = TOPFOLDER.strip().strip('/')
 
 findDatastreamsChild = ['OBJ','JP2','MODS', 'TN', 'LARGE_JPG', 'OCR', 'HOCR', 'JPG']
-findDatastreamsParent = ['TN', 'OCR']
+findDatastreamsParent = ['TN', 'OCR', 'MODS']
 PARENT_TYPE = args.parent_cmodel
 CHILD_TYPE = args.child_cmodel
 OUTPUT_FILENAME = os.path.abspath(args.OUTPUT)
@@ -55,7 +55,7 @@ class CompoundObject():
         self.data = {
             'path': parent,
             'datastreams': [],
-            'type': PARENT_TYPE,
+            'CMODEL': PARENT_TYPE,
             'children': [],
         }
         self.data['datastreams'] = getDatastreams(parent, findDatastreamsParent)
@@ -64,15 +64,15 @@ class CompoundObject():
             childData = {
                 'path': child,
                 'datastreams': [],
-                'type': CHILD_TYPE,
+                'CMODEL': CHILD_TYPE,
             }
             childData['datastreams'] = getDatastreams(child, findDatastreamsChild)
             self.data['children'].append(childData)
     def getParentTabular(self):
         myline = self.data['datastreams']
         myline['path'] = self.data['path']
-        myline['type'] = self.data['type']
-        myline['localIndex'] = 1
+        myline['CMODEL'] = self.data['CMODEL']
+        myline['SEQUENCE'] = 1
         return(myline)
     def getChildrenTabular(self):
         mydata = []
@@ -80,8 +80,8 @@ class CompoundObject():
         for child in self.data['children']:
             myline = child['datastreams']
             myline['path'] = child['path']
-            myline['type'] = child['type']
-            myline['localIndex'] = localIndex
+            myline['CMODEL'] = child['CMODEL']
+            myline['SEQUENCE'] = localIndex
             mydata.append(myline)
             localIndex = localIndex + 1
         return mydata
@@ -119,12 +119,12 @@ class Batch():
         currentParentGlobalIndexNumber = None
         for myLine in myData:
             myLine['globalIndex'] = globalIndex
-            myLine['parentLineNumber'] = None
-            if myLine['type'] == PARENT_TYPE:
+            myLine['A_PARENT'] = None
+            if myLine['CMODEL'] == PARENT_TYPE:
                 currentParentGlobalIndexNumber = globalIndex
-                myLine['parentLineNumber'] = args.PARENTID
+                myLine['A_PARENT'] = args.PARENTID
             else:
-                myLine['parentLineNumber'] = currentParentGlobalIndexNumber
+                myLine['A_PARENT'] = currentParentGlobalIndexNumber
             globalIndex = globalIndex + 1
         return myData
 

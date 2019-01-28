@@ -42,7 +42,7 @@ if __name__ == "__main__":
     if args.nocopy or args.dry_run:
         destFolder = sourceFolder
     else:
-        destFolder = sourceFolder + '-batched'
+        destFolder = sourceFolder + '-MODSed'
         shutil.copytree(sourceFolder, destFolder)
     os.chdir(destFolder)
 
