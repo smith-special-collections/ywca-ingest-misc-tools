@@ -15,7 +15,7 @@ argparser.add_argument("OUTPUT", help="The base name of the CSV file(s). Example
 argparser.add_argument("PARENTID")
 argparser.add_argument("--remote-path", help="Example: /mnt/ingest/myingestbatch/")
 argparser.add_argument("--parent-cmodel", default="islandora:compoundCModel", help="default: 'islandora:compoundCModel'")
-argparser.add_argument("--child-cmodel", default="islandora:sp_basic_image", help="default: 'islandora:sp_basic_image'")
+argparser.add_argument("--child-cmodel", default="islandora:sp_large_image_cmodel", help="default: 'islandora:sp_large_image_cmodel'")
 argparser.add_argument("--max-batch-size", type=int, help="Example: 5000. Rounds up to the nearest compound object.")
 args = argparser.parse_args()
 
