@@ -8,3 +8,4 @@ ERROR:root:No instances of OCR datastream in ./smith_ssc_324_digital_object_323/
 ERROR:root:No instances of HOCR datastream in ./smith_ssc_324_digital_object_323/00005
 ERROR:root:No instances of JPG datastream in ./smith_ssc_324_digital_object_323/00005
 WARNING:root:More than one instances of OBJ datastream in ./smith_ssc_324_digital_object_323/00006. Arbitrarily picking ./smith_ssc_324_digital_object_323/00006/OBJ.JPG.
+INFO:root:Writing to: /Users/tchambers/code/ywca-ingest-misc/batch2imi/tests/test-output.csv.csv

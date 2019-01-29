@@ -4,15 +4,19 @@ import argparse
 import logging
 import csv
 import re
+import sys
 import pprint
+
+logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument("TOPFOLDER")
-argparser.add_argument("OUTPUT")
+argparser.add_argument("OUTPUT", help="The base name of the CSV file(s). Example: mybatch. The file extension and index numbers will be appended automatically. E.g. mybatch.csv or for several batches, when using --max-batch-size mybatch-0001.csv, mybatch-0002.csv, mybatch-0003.csv etc.")
 argparser.add_argument("PARENTID")
 argparser.add_argument("--remote-path", help="Example: /mnt/ingest/myingestbatch/")
 argparser.add_argument("--parent-cmodel", default="islandora:compoundCModel", help="default: 'islandora:compoundCModel'")
 argparser.add_argument("--child-cmodel", default="islandora:sp_basic_image", help="default: 'islandora:sp_basic_image'")
+argparser.add_argument("--max-batch-size", type=int, help="Example: 5000. Rounds up to the nearest compound object.")
 args = argparser.parse_args()
 
 TOPFOLDER = args.TOPFOLDER
@@ -23,7 +27,7 @@ findDatastreamsChild = ['OBJ','JP2','MODS', 'TN', 'LARGE_JPG', 'OCR', 'HOCR', 'J
 findDatastreamsParent = ['TN', 'OCR', 'MODS']
 PARENT_TYPE = args.parent_cmodel
 CHILD_TYPE = args.child_cmodel
-OUTPUT_FILENAME = os.path.abspath(args.OUTPUT)
+OUTPUT_FILENAME_BASE = os.path.abspath(args.OUTPUT)
 
 def getSubDirs(directory):
     level1 = glob.glob(directory + '/*')
@@ -128,6 +132,35 @@ class Batch():
             globalIndex = globalIndex + 1
         return myData
 
+def writeCsvFile(table, fieldnames, fileName):
+    with open(fileName, 'w', newline='') as csvfile:
+        csvWriter = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        csvWriter.writeheader()
+        for line in table:
+            csvWriter.writerow(line)
+
+def getColumnNames(table):
+    csvFieldsSet = set()
+    for line in table:
+        csvFieldsSet.update(line.keys())
+    fieldnames = list(csvFieldsSet)
+    fieldnames.sort()
+    return fieldnames
+
+def breakUpBatch(table, maxBatchSize):
+    batches = []
+    batches.append([])
+    batchIndex = 0
+    lineNum = 1
+    for myLine in table:
+        if lineNum > maxBatchSize and myLine['CMODEL'] == PARENT_TYPE:
+            batches.append([])
+            batchIndex = batchIndex + 1
+        batches[batchIndex].append(myLine)
+        lineNum = lineNum + 1
+        
+    return batches
+
 if __name__ == '__main__':
     os.chdir(sourceFolder)
     parent_s = getSubDirs('.')
@@ -137,15 +170,16 @@ if __name__ == '__main__':
         batch.addObject(compoundObject)
     table = batch.getImiBatch()
 
-    # Write table to a file
-    csvFieldsSet = set()
-    for line in table:
-        csvFieldsSet.update(line.keys())
-    fieldnames = list(csvFieldsSet)
-    fieldnames.sort()
-    with open(OUTPUT_FILENAME, 'w', newline='') as csvfile:
-        csvWriter = csv.DictWriter(csvfile, fieldnames=fieldnames)
-
-        csvWriter.writeheader()
-        for line in table:
-            csvWriter.writerow(line)
+    fieldnames = getColumnNames(table)
+    if args.max_batch_size is not None:
+        subBatches = breakUpBatch(table, args.max_batch_size)
+        subBatchIndex = 1
+        for subBatch in subBatches:
+            outputFileName = "%s-%04d.csv" % (OUTPUT_FILENAME_BASE, subBatchIndex)
+            logging.info("Writing to: %s" % outputFileName)
+            writeCsvFile(subBatch, fieldnames, outputFileName)
+            subBatchIndex = subBatchIndex + 1
+    else:
+        outputFileName = "%s.csv" % OUTPUT_FILENAME_BASE
+        logging.info("Writing to: %s" % outputFileName)
+        writeCsvFile(table, fieldnames, outputFileName)
