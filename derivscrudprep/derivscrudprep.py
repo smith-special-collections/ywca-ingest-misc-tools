@@ -18,12 +18,20 @@ solrOutput = "pid2localid.json"
 outputDir = 'crud_files'
 commandProgramOutput = 'makecrudfiles.sh'
 
+# datastreams = {
+#     'TN': 'TN.jpg',
+#     'JPG': 'JPG.jpg',
+#     'LARGE_JPG': 'LARGE_JPG.jpg',
+#     'JP2': 'JP2.jp2',
+#     'OCR': 'OCR.txt',
+# }
+
 datastreams = {
-    'TN': 'TN.jpg',
-    'JPG': 'JPG.jpg',
-    'LARGE_JPG': 'LARGE_JPG.jpg',
-    'JP2': 'JP2.jp2',
-    'OCR': 'OCR.txt',
+    'JP2': {'filename': 'JP2.jp2', 'mimetype': 'image/jp2', 'label':'JPEG 2000'},
+    'TN': {'filename': 'TN.jpg', 'mimetype': 'image/jpeg', 'label':'Thumbnail'},
+    'JPG': {'filename': 'JPG.jpg', 'mimetype': 'image/jpeg', 'label':'Medium sized JPEG'},
+    'OCR': {'filename': 'OCR.txt', 'mimetype': 'text/plain', 'label':'OCR Datastream'},
+    'LARGE_JPG': {'filename': 'LARGE_JPG.jpg', 'mimetype': 'image/jpeg', 'label':'Large JPG'},
 }
 
 # Make a mapping between local ID and directory of datastreams
@@ -50,7 +58,7 @@ def makePid2DirMapping(dirMapping, pidMapping):
         try:
             localId = record['mods_identifier_local_s']
         except KeyError as e:
-            logging.error("%s does not have a key called 'mods_identifier_local_s' %s" % (pid, record))
+            logging.error("%s does not have a key called 'mods_identifier_local_s'" % pid)
         try:
             dir = dirMapping[localId]
         except KeyError as e:
@@ -65,7 +73,7 @@ def makeCommandProgram(pid2DirMapping):
     commandProgram = []
 
     # Make directories for each datastream type (it's the way crud needs it)
-    for datastreamName, datastreamFilename in datastreams.items():
+    for datastreamName, datastreamData in datastreams.items():
         commandTemplate = Template("mkdir $outputDir/$datastreamName")
         command = commandTemplate.substitute(
             outputDir=outputDir,
@@ -79,9 +87,9 @@ def makeCommandProgram(pid2DirMapping):
         commandTemplate = Template("cp $srcDir/$originalFilename $outputDir/$datastreamName/$crudFilename")
 
         # Go through the various datastream types
-        for datastreamName, datastreamFilename  in datastreams.items():
+        for datastreamName, datastreamData  in datastreams.items():
             srcDir = values['dir']
-            originalFilename = datastreamFilename
+            originalFilename = datastreamData['filename']
             crudFilename = pid.replace(':', '_') + '_' + originalFilename
             command = commandTemplate.substitute(
                 srcDir=srcDir,
@@ -91,7 +99,7 @@ def makeCommandProgram(pid2DirMapping):
                 datastreamName=datastreamName
             )
             commandProgram.append(command)
-    
+            commandProgram.sort() # make output consistent for automated tests
     return commandProgram
 
 dirMapping = makeDirMapping(fileListFile)

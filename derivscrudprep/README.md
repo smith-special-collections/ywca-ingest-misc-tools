@@ -25,3 +25,11 @@ solrOutput = "pid2localid.json"
 outputDir = 'crud_files'
 commandProgramOutput = 'makecrudfiles.sh'
 ```
+
+Automated tests
+===============
+```
+cd tests
+./run_tests.sh
+```
+Check md5sums. If they are the same, tests pass. If they are different, take note of the diff output.
