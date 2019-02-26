@@ -1,30 +1,24 @@
-# 'dir2localid.list' is made with the following command:
-# find /mnt/ingest/smith/1k-photos-test-all-files -name MODS.xml | xargs grep local | sed -e 's/<[^>]*>//g' > dir2localid.list
-#
-# 'pid2localid.json' is made with the following command:
-# curl "http://compass-fedora-stage.fivecolleges.edu:8080/solr/collection1/select?q=fgs_createdDate_dt%3A+%5B2019-02-03T20%3A23%3A00.000Z+TO+2019-02-03T21%3A11%3A00.000Z%5D+AND+PID%3Atest%5C%3A*&wt=json&indent=true&rows=100000&fl=PID%2Cfgs_label_s%2CRELS_EXT_hasModel_uri_s%2Cfgs_createdDate_dt%2Cfgs_lastModifiedDate_dt%2Cfgs_ownerId_s%2Cmods_identifier_local_s" > pid2localid.json
-#
-# Then use islandora CRUD:
-# /mnt/ingest/smith/photographs-test-lc/crud_files
-# --no_derivs
-# 
+description = """Create a bash script called makecrudfiles.sh which, when run,
+will create files appropriately named and organized for Islandora CRUD.
+It copies the files from a batch directory into individual directories for each
+datastream and renames those files to include the target PID. Requires
+\"dir2localid.list\" and \"pid2localid.json\" to exist in the current
+directory. Read the README for more details."""
 
 import json
 from string import Template
 import logging
+import argparse
+
+argparser = argparse.ArgumentParser(description=description)
+argparser.add_argument('OUTPUTDIR', help="Full path of the location in which crud files should be copied to. e.g. /mnt/ingest/smith/1k-photos-test-all-files/crud_files")
+cliargs = argparser.parse_args()
 
 fileListFile = "dir2localid.list"
 solrOutput = "pid2localid.json"
-outputDir = 'crud_files'
+outputDir = cliargs.OUTPUTDIR
 commandProgramOutput = 'makecrudfiles.sh'
-
-# datastreams = {
-#     'TN': 'TN.jpg',
-#     'JPG': 'JPG.jpg',
-#     'LARGE_JPG': 'LARGE_JPG.jpg',
-#     'JP2': 'JP2.jp2',
-#     'OCR': 'OCR.txt',
-# }
+drushCommandsOutput = 'drushcommands.sh'
 
 datastreams = {
     'JP2': {'filename': 'JP2.jp2', 'mimetype': 'image/jp2', 'label':'JPEG 2000'},
@@ -32,6 +26,7 @@ datastreams = {
     'JPG': {'filename': 'JPG.jpg', 'mimetype': 'image/jpeg', 'label':'Medium sized JPEG'},
     'OCR': {'filename': 'OCR.txt', 'mimetype': 'text/plain', 'label':'OCR Datastream'},
     'LARGE_JPG': {'filename': 'LARGE_JPG.jpg', 'mimetype': 'image/jpeg', 'label':'Large JPG'},
+    'TECHMD': {'filename': 'TECHMD.xml', 'mimetype': 'application/xml', 'label':'TECHMD'},
 }
 
 # Make a mapping between local ID and directory of datastreams
@@ -84,7 +79,7 @@ def makeCommandProgram(pid2DirMapping):
     # Copy files into an output dir with crud friendly filename format
     # keep each type in its own directory
     for pid,values in pid2DirMapping.items():        
-        commandTemplate = Template("cp $srcDir/$originalFilename $outputDir/$datastreamName/$crudFilename")
+        commandTemplate = Template("mv $srcDir/$originalFilename $outputDir/$datastreamName/$crudFilename")
 
         # Go through the various datastream types
         for datastreamName, datastreamData  in datastreams.items():
@@ -99,16 +94,38 @@ def makeCommandProgram(pid2DirMapping):
                 datastreamName=datastreamName
             )
             commandProgram.append(command)
-            commandProgram.sort() # make output consistent for automated tests
+        commandProgram.sort() # make output consistent for automated tests
     return commandProgram
 
-dirMapping = makeDirMapping(fileListFile)
-pidMapping = makePidMapping(solrOutput)
+def makeDrushCommands(datastreams, directory):
+    commandTemplate = Template("date && time -p drush islandora_datastream_crud_push_datastreams --user=1 --datastreams_mimetype=\"$mimetype\" --datastreams_source_directory=\"$directory/$datastream\" --datastreams_crud_log=$directory/crud-`date +%s`.log -y --datastreams_label=\"$label\" > $directory/$datastream-`date +%s`.log 2>&1 && date")
+    commandProgram = []
+    for datastream, datastreamData in datastreams.items():
+        command = commandTemplate.substitute(
+            datastream=datastream,
+            mimetype=datastreamData['mimetype'],
+            directory=directory,
+            label=datastreamData['label'],
+        )
+        commandProgram.append(command)
 
-# Do the mapping, and generate the commands
-pid2DirMapping = makePid2DirMapping(dirMapping, pidMapping)
-commandProgram = makeCommandProgram(pid2DirMapping)
+    commandProgram.sort() # make output consistent for automated tests
+    return commandProgram
 
-with open(commandProgramOutput, 'w') as outfile:
-    for line in commandProgram:
-        outfile.write(line + '\n')
+def writeCommandOutput(commandProgram, commandProgramOutput):
+    with open(commandProgramOutput, 'w') as outfile:
+        for line in commandProgram:
+            outfile.write(line + '\n')
+
+if __name__ == '__main__':
+    dirMapping = makeDirMapping(fileListFile)
+    pidMapping = makePidMapping(solrOutput)
+
+    # Do the mapping, and generate the commands
+    pid2DirMapping = makePid2DirMapping(dirMapping, pidMapping)
+    commandProgram = makeCommandProgram(pid2DirMapping)
+    writeCommandOutput(commandProgram, commandProgramOutput)
+
+    # Also generate a handy drush commands file
+    drushProgram = makeDrushCommands(datastreams, outputDir)
+    writeCommandOutput(drushProgram, drushCommandsOutput)

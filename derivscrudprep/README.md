@@ -13,7 +13,7 @@ find /mnt/ingest/smith/1k-photos-test-all-files -name MODS.xml | xargs grep loca
 
 'pid2localid.json' is made with the following command:
 ```
-curl "http://compass-fedora-stage.fivecolleges.edu:8080/solr/collection1/select?q=fgs_createdDate_dt%3A+%5B2019-02-03T20%3A23%3A00.000Z+TO+2019-02-03T21%3A11%3A00.000Z%5D+AND+PID%3Atest%5C%3A*&wt=json&indent=true&rows=100000&fl=PID%2Cfgs_label_s%2CRELS_EXT_hasModel_uri_s%2Cfgs_createdDate_dt%2Cfgs_lastModifiedDate_dt%2Cfgs_ownerId_s%2Cmods_identifier_local_s" > pid2localid.json
+curl "http://compass-fedora-stage.fivecolleges.edu:8080/solr/collection1/select?q=fgs_createdDate_dt%3A+%5B2019-02-04T20%3A29%3A00.000Z+TO+2019-02-04T21%3A45%3A00.000Z%5D+AND+PID%3Atest%5C%3A*&wt=json&indent=true&rows=100000&fl=PID%2Cfgs_label_s%2CRELS_EXT_hasModel_uri_s%2Cfgs_createdDate_dt%2Cfgs_lastModifiedDate_dt%2Cfgs_ownerId_s%2Cmods_identifier_local_s" > pid2localid.json
 ```
 
 Then **derivscrudprep.py** is used to generate a bash script full of the commands to make the crud ingest directories `makecrudfiles.sh`. That script is then run on the server.
