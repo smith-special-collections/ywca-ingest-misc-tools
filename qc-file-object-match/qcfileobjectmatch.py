@@ -48,7 +48,7 @@ if __name__ == "__main__":
     for objectId in objectIds:
         digitalObjects = findObjects(objectId)
         if len(digitalObjects) == 1:
-            logging.info("One matching object found %s %s" % (objectId, objects[0]['PID']) )
+            logging.info("One matching object found %s %s" % (objectId, digitalObjects[0]['PID']) )
         if len(digitalObjects) < 1:
             logging.error("No matching object found %s" % objectId)
         if len(digitalObjects) > 1:
