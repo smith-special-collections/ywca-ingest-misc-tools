@@ -5,6 +5,7 @@ for testing cache expiration settings.
 from string import Template
 import requests
 from requests.utils import quote
+from multiprocessing import Pool
 import logging
 
 ENVIRONMENT = 'dev'
@@ -17,15 +18,20 @@ def getAllLargeImagePids(environment):
         pids.append(solrDoc['PID'])
     return pids
 
-pids = getAllLargeImagePids(ENVIRONMENT)
-
-print("Querying %s large image objects" % len(pids))
-
-# Make a template for the URL, where $PID represents the incrementing pid
-# and $ENVIRONMENT is the environment
-urlTemplate = Template("https://compass-$ENVIRONMENT.fivecolleges.edu/iiif/2/$PID~JP2~a27cf65dff6ca913d5bf4d0516e2280b7446763a185e2c5db8f1f8b24f144a00https%3A%2F%2Fcompass.fivecolleges.edu%2Fislandora%2Fobject%2F$PID%2Fdatastream%2FJP2%2Fview%3Ftoken%3Da27cf65dff6ca913d5bf4d0516e2280b7446763a185e2c5db8f1f8b24f144a00/full/pct:25/0/default.jpg")
-
-for pid in pids:
+def queryObject(pid):
+    # Make a template for the URL, where $PID represents the incrementing pid
+    # and $ENVIRONMENT is the environment
+    urlTemplate = Template("https://compass-$ENVIRONMENT.fivecolleges.edu/iiif/2/$PID~JP2~a27cf65dff6ca913d5bf4d0516e2280b7446763a185e2c5db8f1f8b24f144a00https%3A%2F%2Fcompass.fivecolleges.edu%2Fislandora%2Fobject%2F$PID%2Fdatastream%2FJP2%2Fview%3Ftoken%3Da27cf65dff6ca913d5bf4d0516e2280b7446763a185e2c5db8f1f8b24f144a00/full/pct:25/0/default.jpg")
     url = urlTemplate.substitute(ENVIRONMENT = ENVIRONMENT, PID = quote(pid))
     logging.debug(url)
-    response = requests.get(url)
+    requests.get(url)
+    # do not return response because we don't want it
+    return
+
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
+    pids = getAllLargeImagePids(ENVIRONMENT)
+    logging.info("Querying %s large image objects" % len(pids))
+    # Use multiprocessing to speed up work
+    with Pool(processes=10) as pool:
+        pool.map(queryObject, pids)
