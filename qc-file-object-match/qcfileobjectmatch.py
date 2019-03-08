@@ -27,7 +27,7 @@ def getObjectIdsFromFile(fileListFile):
     with open(fileListFile) as fp:
         for line in fp:
             local_id = os.path.basename(line.strip())
-            local_id = local_id.replace(".TIF","").replace(".tif", "")
+            local_id = local_id.replace(".TIF","").replace(".tif", "").replace(".xml", "")
             logging.debug(local_id)
             objectIds.append(local_id)
     return objectIds
