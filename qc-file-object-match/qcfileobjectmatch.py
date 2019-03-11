@@ -17,7 +17,7 @@ cliargs = argparser.parse_args()
 
 fileListFile = cliargs.FILELISTFILE
 
-logging.basicConfig(stream=sys.stdout, level=logging.WARNING)
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logging.getLogger("requests").setLevel(logging.WARNING)
 
 solr_query_template = "http://compass-fedora-prod.fivecolleges.edu:8080/solr/collection1/select?q=mods_identifier_local_s%3A%22{local_id}%22&fl=PID%2Cfgs_label_s%2Cmods_titleInfo_partName_s%2Cmods_titleInfo_title_s&wt=json&indent=true"

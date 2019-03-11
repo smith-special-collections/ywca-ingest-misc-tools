@@ -10,7 +10,7 @@ import argparse
 import logging
 
 def getAllLargeImagePids(environment):
-    url = "http://compass-fedora-" + environment + ".fivecolleges.edu:8080/solr/collection1/select?q=RELS_EXT_hasModel_uri_s%3Ainfo%5C%3Afedora%5C%2Fislandora%5C%3Asp_large_image_cmodel&fl=PID&wt=json&indent=true&rows=100000"
+    url = "http://compass-fedora-" + environment + ".fivecolleges.edu:8080/solr/collection1/select?q=(*%3A*+NOT+RELS_EXT_isViewableByRole_literal_s%3A*)+AND+RELS_EXT_hasModel_uri_s%3Ainfo%5C%3Afedora%5C%2Fislandora%5C%3Asp_large_image_cmodel&fl=PID&wt=json&indent=true&rows=100000"
     response = requests.get(url)
     pids = []
     for solrDoc in response.json()['response']['docs']:
@@ -37,7 +37,7 @@ if __name__ == '__main__':
     parser.add_argument('environment', help="e.g. dev stage or prod")
     args = parser.parse_args()
     ENVIRONMENT = args.environment
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.DEBUG)
     
     pids = getAllLargeImagePids(ENVIRONMENT)
     logging.info("Querying %s large image objects" % len(pids))
