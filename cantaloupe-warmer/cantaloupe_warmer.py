@@ -35,10 +35,14 @@ if __name__ == '__main__':
     global ENVIRONMENT
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('environment', help="e.g. dev stage or prod")
+    parser.add_argument('--debug', action='store_true', help="Print lots of messages")
+
     args = parser.parse_args()
     ENVIRONMENT = args.environment
-    logging.basicConfig(level=logging.DEBUG)
-    
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
     pids = getAllLargeImagePids(ENVIRONMENT)
     logging.info("Querying %s large image objects" % len(pids))
     # Use multiprocessing to speed up work
