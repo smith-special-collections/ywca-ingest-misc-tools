@@ -16,8 +16,15 @@ from fedora import Fedora
 import os.path
 import pickle
 from bs4 import BeautifulSoup
+import requests_cache
 
+# Set up a local cache of http requests to Solr and Fedora
+requests_cache.install_cache('requests_cache')
 
+# Set up a bulk data cache using Python pickles for storing data sets
+# for later use. This is needed in addition to the http cache because
+# when working with a million+ datapoints even that doesn't 
+# improve performance enough to provide instantaneous lookups.
 class Cache:
     def __init__(self, filename):
         self.filename = filename
