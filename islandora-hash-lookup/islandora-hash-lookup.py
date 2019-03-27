@@ -11,12 +11,18 @@ If Solr had the md5s I would use that but it doesnn't. Apparently it's possible 
 """
 import sys
 import logging
-from solr import Solr
-from fedora import Fedora
 import os.path
 import pickle
 from bs4 import BeautifulSoup
 import requests_cache
+
+from solr import Solr
+from fedora import Fedora
+
+SMALL_TEST_SET = True
+
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+logging.getLogger("requests").setLevel(logging.WARNING)
 
 # Set up a local cache of http requests to Solr and Fedora
 requests_cache.install_cache('requests_cache')
@@ -63,6 +69,11 @@ def getAllObjectPids():
         cache.save(allpids)
         return allpids
 
+# Make getAllObjectPids() return a much smaller list if in test mode
+if SMALL_TEST_SET:
+    logging.warning("SMALL_TEST_SET = True")
+    getAllObjectPids = lambda: ["smith:%s" % i for i in range(169270, 169449) if True]
+
 def getObjectMd5(fedora, pid):
     """Parses the TECHMD datastream file for the <md5checksum> tag
     """
@@ -104,11 +115,11 @@ def getAllObjectMd5s(pids):
 
 if __name__ == "__main__":
     "Main function"
-    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
-    logging.getLogger("requests").setLevel(logging.WARNING)
 
     pids = getAllObjectPids()
-    getAllObjectMd5s(pids)
+    remoteMd5s = getAllObjectMd5s(pids)
+    logging.debug("remoteMd5s memory footprint: %s" % sys.getsizeof(remoteMd5s))
+    import pdb; pdb.set_trace()
 
     # for inputLine in fileinput.input():
     #     _inputLine = inputLine.strip() # remove trailing newline
