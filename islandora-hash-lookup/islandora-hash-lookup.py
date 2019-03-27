@@ -11,19 +11,15 @@ If Solr had the md5s I would use that but it doesnn't. Apparently it's possible 
 """
 import sys
 import logging
-import requests_cache
 
 from solr import Solr
 from fedora import Fedora
 from datacache import DataCache
 
-SMALL_TEST_SET = True
+SMALL_TEST_SET = False
 
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+logging.basicConfig(stream=sys.stdout, level=logging.WARNING)
 logging.getLogger("requests").setLevel(logging.WARNING)
-
-# Set up a local cache of http requests to Solr and Fedora
-requests_cache.install_cache('requests_cache')
 
 # Set up a bulk data cache using Python pickles for storing data sets
 # for later use. This is needed in addition to the http cache because
@@ -34,7 +30,7 @@ def getAllObjectPids():
 
     # Check cache first
     cache = DataCache('allpids.cache')
-    allpids = cache.load()
+    allpids = cache.getBulkData()
     if allpids:
         return allpids
     else:
@@ -62,7 +58,7 @@ def getAllObjectMd5s(pids):
 
     # Check cache first
     cache = DataCache('all_remote_md5s.cache')
-    allmd5s = cache.load()
+    allmd5s = cache.getBulkData()
     if allmd5s:
         return allmd5s
     else:
@@ -71,7 +67,7 @@ def getAllObjectMd5s(pids):
         fedora.loadConfig('fedora.cfg', 'prod')
         
         for pid in pids:
-            md5sum = fedora.getObjectMd5(pid)
+            md5sum = fedora.getObjectMd5_cached(pid)
             allmd5s[pid] = md5sum
             logging.debug("%s %s" % (md5sum, pid))
         
