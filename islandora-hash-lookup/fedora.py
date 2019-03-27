@@ -2,11 +2,16 @@ import requests
 import string
 import configparser
 import logging
+from bs4 import BeautifulSoup
+
+from datacache import DataCache
 
 class Fedora:
     def __init__(self):
         # Start a requests session for better formance (measured 1.77x faster)
         self.session = requests.Session()
+        # Start a data cache for md5sums
+        self.md5cache = DataCache("fedora-md5s.cache")
 
     def getDatastream(self, namespace, pidnumber, datastream):
         "Fetch a datastream and return its contents"
@@ -74,3 +79,19 @@ class Fedora:
             exit(1)
 
         self.config = fedoraConfig
+
+    def getObjectMd5(self, pid):
+        """Parses the TECHMD datastream of an object for the <md5checksum> tag
+        Returns a string of the md5sum.
+        """
+
+        try:
+            namespace = pid.split(':')[0]
+            pidnumber = pid.split(':')[1]
+            datastreamContents = self.getDatastream(namespace, pidnumber, 'TECHMD')
+            soup = BeautifulSoup(datastreamContents, features="html.parser")
+            md5sum = soup.md5checksum.contents[0]
+            return md5sum
+        except Exception as e:
+            logging.error("Could not get md5sum for %s %s" % (pid, e))
+            return None
