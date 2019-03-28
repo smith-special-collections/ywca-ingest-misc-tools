@@ -19,7 +19,7 @@ class Fedora:
         # Start a data cache for md5sums
         # This references self._requestMd5() (further below) as the callback
         # function for requesting the data if it's not in the cache.
-        self.md5cache = DataCache(MD5_CACHE_FILE, get_callback=self.getObjectMd5)
+        # self.md5cache = DataCache(MD5_CACHE_FILE, get_callback=self.getObjectMd5)
 
     def getDatastream(self, namespace, pidnumber, datastream):
         "Fetch a datastream and return its contents"
@@ -93,6 +93,7 @@ class Fedora:
         Returns a string of the md5sum. This is the raw uncached version. You
         should probably use getObjectMd5() instead.
         """
+        logging.debug("getObjectMd5")
         try:
             namespace = pid.split(':')[0]
             pidnumber = pid.split(':')[1]
@@ -104,9 +105,9 @@ class Fedora:
             logging.error("Could not get md5sum for %s %s" % (pid, e))
             return None
 
-    def getObjectMd5_cached(self, pid):
-        """Use a DataCache called self.md5cache to look up the md5sum of the
-        given object
-        """
-        value = self.md5cache.get(pid)
-        return value
+    # def getObjectMd5_cached(self, pid):
+    #     """Use a DataCache called self.md5cache to look up the md5sum of the
+    #     given object
+    #     """
+    #     value = self.md5cache.get(pid)
+    #     return value
