@@ -18,4 +18,4 @@ response = requests.get(url)
 
 xml_parser = ET.fromstring(response.content)
 title = xml_parser.find('{http://www.loc.gov/mods/v3}titleInfo/{http://www.loc.gov/mods/v3}title').text
-print(title)
+print(sys.argv[1], title)

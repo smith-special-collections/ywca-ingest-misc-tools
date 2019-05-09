@@ -1,0 +1,2 @@
+python3 ../compare_localid_page_islandora_sequence_page.py smith_142075_BAD.xml
+python3 ../compare_localid_page_islandora_sequence_page.py smith_142075_MODS.xml
